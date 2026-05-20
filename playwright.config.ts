@@ -1,4 +1,16 @@
 import { defineConfig, devices } from '@playwright/test';
+import { OrtoniReportConfig } from 'ortoni-report';
+
+const ortoniConfig: OrtoniReportConfig = {
+  open: 'never',
+  folderPath: 'report',
+  filename: 'index.html',
+  title: 'Playwright E2E Report',
+  projectName: 'Playwright E2E Tests',
+  testType: 'e2e',
+  authorName: 'Prabhu',
+  base64Image: true,
+};
 
 /**
  * Read environment variables from file.
@@ -22,7 +34,10 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: [
+    ['html'],
+    ['ortoni-report', ortoniConfig],
+  ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
@@ -31,6 +46,8 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     headless: false,
+    screenshot: 'on',
+    video: 'retain-on-failure',
   },
 
   /* Configure projects for major browsers */
@@ -39,12 +56,12 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-
+/*
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
-/*
+
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },

@@ -1,4 +1,5 @@
 import { type Page, type Locator } from '@playwright/test';
+import { Actions } from '../utils/actions';
 
 export interface StudentFormData {
   firstName: string;
@@ -15,6 +16,8 @@ export interface StudentFormData {
 }
 
 export class PracticeFormPage {
+  readonly actions: Actions;
+
   // Form field locators — using stable ID-based selectors
   readonly firstName: Locator;
   readonly lastName: Locator;
@@ -43,6 +46,8 @@ export class PracticeFormPage {
   } as const;
 
   constructor(private readonly page: Page) {
+    this.actions = new Actions(page);
+
     this.firstName = page.locator('#firstName');
     this.lastName = page.locator('#lastName');
     this.email = page.locator('#userEmail');
@@ -58,68 +63,68 @@ export class PracticeFormPage {
   }
 
   async goto() {
-    await this.page.goto('https://demoqa.com/automation-practice-form');
+    await this.actions.goto('https://demoqa.com/automation-practice-form');
   }
 
   async fillName(first: string, last: string) {
-    await this.firstName.fill(first);
-    await this.lastName.fill(last);
+    await this.actions.fill(this.firstName, first, "First name");
+    await this.actions.fill(this.lastName, last, "Last name");
   }
 
   async fillEmail(email: string) {
-    await this.email.fill(email);
+    await this.actions.fill(this.email, email, "Email");
   }
 
   async selectGender(gender: 'Male' | 'Female' | 'Other') {
     const id = PracticeFormPage.GENDER_MAP[gender];
-    await this.page.locator(`label[for="${id}"]`).click();
+    await this.actions.clickByLocator(`label[for="${id}"]`, `Gender: ${gender}`);
   }
 
   async fillMobile(mobile: string) {
-    await this.mobile.fill(mobile);
+    await this.actions.fill(this.mobile, mobile, "Mobile number");
   }
 
   async selectDateOfBirth(day: string, month: string, year: string) {
-    await this.dateOfBirthInput.click();
-    await this.page.locator('.react-datepicker__month-select').selectOption(month);
-    await this.page.locator('.react-datepicker__year-select').selectOption(year);
+    await this.actions.click(this.dateOfBirthInput, "Date of birth input");
+    await this.actions.selectOption(this.page.locator('.react-datepicker__month-select'), month, "Month");
+    await this.actions.selectOption(this.page.locator('.react-datepicker__year-select'), year, "Year");
     const dayPadded = day.padStart(3, '0');
-    await this.page
-      .locator(`.react-datepicker__day--${dayPadded}:not(.react-datepicker__day--outside-month)`)
-      .click();
+    await this.actions.click(
+      this.page.locator(`.react-datepicker__day--${dayPadded}:not(.react-datepicker__day--outside-month)`),
+      `Day: ${day}`
+    );
   }
 
   async addSubjects(subjects: string[]) {
     for (const subject of subjects) {
-      await this.subjectsInput.fill(subject);
-      await this.page.locator('.subjects-auto-complete__option').first().click();
+      await this.actions.fill(this.subjectsInput, subject, `Subject: ${subject}`);
+      await this.actions.click(this.page.locator('.subjects-auto-complete__option').first(), `Select subject: ${subject}`);
     }
   }
 
   async selectHobbies(hobbies: ('Sports' | 'Reading' | 'Music')[]) {
     for (const hobby of hobbies) {
       const id = PracticeFormPage.HOBBY_MAP[hobby];
-      await this.page.locator(`label[for="${id}"]`).click();
+      await this.actions.clickByLocator(`label[for="${id}"]`, `Hobby: ${hobby}`);
     }
   }
 
   async fillCurrentAddress(address: string) {
-    await this.currentAddress.fill(address);
+    await this.actions.fill(this.currentAddress, address, "Current address");
   }
 
   async selectState(stateOptionIndex: number) {
-    await this.page.locator('#state').click();
-    await this.page.locator(`#react-select-3-option-${stateOptionIndex}`).click();
+    await this.actions.click(this.page.locator('#state'), "State dropdown");
+    await this.actions.click(this.page.locator(`#react-select-3-option-${stateOptionIndex}`), `State option ${stateOptionIndex}`);
   }
 
   async selectCity(cityOptionIndex: number) {
-    await this.page.locator('#city').click();
-    await this.page.locator(`#react-select-4-option-${cityOptionIndex}`).click();
+    await this.actions.click(this.page.locator('#city'), "City dropdown");
+    await this.actions.click(this.page.locator(`#react-select-4-option-${cityOptionIndex}`), `City option ${cityOptionIndex}`);
   }
 
   async submit() {
-    await this.submitButton.scrollIntoViewIfNeeded();
-    await this.submitButton.click({ force: true });
+    await this.actions.forceClick(this.submitButton, "Submit button");
   }
 
   async fillAndSubmit(data: StudentFormData) {
@@ -141,6 +146,6 @@ export class PracticeFormPage {
   }
 
   async closeModal() {
-    await this.page.keyboard.press('Escape');
+    await this.actions.pressKey('Escape', "Close modal");
   }
 }

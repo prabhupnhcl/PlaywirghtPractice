@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/practice-form.fixture';
+import { test, expect } from './fixtures';
 import { type StudentFormData } from './pages/practice-form.page';
 
 const studentData: StudentFormData = {
